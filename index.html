@@ -481,11 +481,12 @@
                             const x = (pageWidth - imgWidth) / 2;
                             const y = (pageHeight - imgHeight) / 2;
                             
-                            // Add image to PDF
+                            // Add image to PDF - FIXED: Always add page for first image
                             if (index > 0) {
                                 doc.addPage();
                             }
                             
+                            // Add the image to the current page
                             doc.addImage(img, 'PNG', x, y, imgWidth, imgHeight, `image${index}`, 'MEDIUM');
                             
                             processed++;
@@ -496,9 +497,20 @@
                                 // Create blob for download
                                 pdfBlob = doc.output('blob');
                                 
-                                showStatus('PDF created successfully! Click "Download PDF" to save.', 'success');
+                                showStatus(`PDF created successfully with ${uploadedFiles.length} pages! Click "Download PDF" to save.`, 'success');
                                 convertBtn.disabled = false;
                                 downloadBtn.disabled = false;
+                                progressBar.style.display = 'none';
+                            }
+                        };
+                        
+                        img.onerror = function() {
+                            processed++;
+                            progress.style.width = `${(processed / uploadedFiles.length) * 100}%`;
+                            
+                            if (processed === uploadedFiles.length) {
+                                showStatus('Some images failed to load. PDF may be incomplete.', 'error');
+                                convertBtn.disabled = false;
                                 progressBar.style.display = 'none';
                             }
                         };
